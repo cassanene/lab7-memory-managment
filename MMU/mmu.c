@@ -5,7 +5,8 @@
 #include "list.h"
 #include "util.h"
 
-void TOUPPER(char * arr){
+
+void TOUPPER(char * arr){ //
   
     for(int i=0;i<strlen(arr);i++){
         arr[i] = toupper(arr[i]);
@@ -51,18 +52,71 @@ void allocate_memory(list_t * freelist, list_t * alloclist, int pid, int blocksi
      * alloclist - list of allocated memory blocksize
      * freelist - list of free memory blocks
      * 
-    * 1. Check if a node is in the FREE_LIST with a blk(end - start) >= blocksize
-    * 2. if so, remove it and go to #3, if not print ""Error: Memory Allocation <blocksize> blocks\n""
-    * 3. set the blk.pid = pid
-    * 4. set the blk.end = blk->start + blocksize - 1
-    * 5. add the blk to the ALLOC_LIST in ascending order by address.
-    * 6. Deal with the remaining left over memory (fragment).
+    * 1. Check if a node is in the FREE_LIST with a blk(end - start) >= blocksize */
+    node_t *currNode = freelist->head;
+    node_t *prevNode = NULL;
+    node_t *memBlock = NULL;
+  
+    while(currNode){
+      if (currNode->blk->end - currNode->blk->start >= blocksize){
+        memBlock = currNode;
+      }
+      prevNode = currNode;
+      currNode= currNode->next;
+    }
+ 
+    
+    /* 2. if so, remove it and go to #3, if not print ""Error: Memory Allocation <blocksize> blocks\n"" */
+    if (!memBlock){
+      printf("Error: Memory Allocation %d blocks", blocksize);
+    }
+  
+    else {
+      if (!prevNode){
+        freelist->head = freelist->head->next;
+      }
+      
+      else{
+        prevNode->next = memBlock->next;
+      }
+    }
+  
+   int blk_end = memBlock->blk->end; 
+   /*3. set the blk.pid = pid */
+  
+   memBlock->blk->pid = pid;
+  
+   /* 4. set the blk.end = blk->start + blocksize - 1 */
+   memBlock->blk->end = memBlock->blk->start+blocksize -1;
+  
+  
+   /* 5. add the blk to the ALLOC_LIST in ascending order by address.*/
+   //didnt implement yet
+   list_add_ascending_by_address(alloclist,memBlock->blk);
+  
+  
+   /* 6. Deal with the remaining left over memory (fragment).
     *     a. dynamically allocate a new block_t called fragment [use malloc]
     *     b. set the fragment->pid = 0 
     *     c. set the fragment->start = the blk.end + 1
     *     d. set the fragment->end = original blk.end before you changed it in #4
     *     e. add the fragment to the FREE_LIST based on policy
     */
+   if (memBlock-> blk->end != blk_end){
+    block_t *fragment = (block_t*)malloc(sizeof(block_t));
+    fragment ->pid = 0;
+    fragment ->start = memBlock-> blk-> end + 1;
+    fragment -> end = blk_end;
+    if(policy == 1){
+      list_add_to_back(freelist, fragment);
+    }
+    else if(policy == 2){
+      list_add_ascending_by_blocksize(freelist,fragment);
+    } 
+    else if(policy == 2){
+      list_add_descending_by_blocksize(freelist,fragment);
+    }
+  }
 }
 
 void deallocate_memory(list_t * alloclist, list_t * freelist, int pid, int policy) { 
@@ -75,11 +129,47 @@ void deallocate_memory(list_t * alloclist, list_t * freelist, int pid, int polic
      * freelist - list of free memory blocks
      * 
      * 
-    * 1. Check if a node is in the ALLOC_LIST with a blk.pid = pid
-    * 2. if so, remove it and go to #3, if not print "Error: Can't locate Memory Used by PID: <pid>"
-    * 3. set the blk.pid back to 0
-    * 4. add the blk back to the FREE_LIST based on policy.
-    */
+    1. Check if a node is in the ALLOC_LIST with a blk.pid = pid */
+
+    node_t *currNode = alloclist->head;
+    node_t *prevNode = NULL;
+    block_t *block = NULL;
+
+     while (currNode && currNode->blk->pid != pid) {
+      prevNode = currNode;
+      currNode = currNode->next;
+    }
+
+
+    /* 2. if so, remove it and go to #3, if not print "Error: Can't locate Memory Used by PID: <pid>" */
+    if (!currNode){
+      printf("Error: Can't locate Memory Used by PID: %d\n", pid);
+      return;
+    }
+    /* 3. set the blk.pid back to 0 */
+    if (!prevNode){
+      alloclist->head = alloclist->head->next;
+      block = currNode->blk;
+    }
+    else{
+      prevNode->next = currNode->next;
+      block = currNode->blk;
+    }
+    block->pid = 0;
+
+    /* 4. add the blk back to the FREE_LIST based on policy.*/
+    if (policy == 1){
+           //didnt implement yet
+      list_add_to_back(freelist, block);
+    }
+    else if (policy == 2){
+           //didnt implement yet
+      list_add_ascending_by_blocksize(freelist, block);
+    }
+    else if (policy == 3){
+           //didnt implement yet
+      list_add_descending_by_blocksize(freelist, block);
+    }
 }
 
 list_t* coalese_memory(list_t * list){

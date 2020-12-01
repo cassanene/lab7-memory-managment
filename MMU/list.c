@@ -368,11 +368,13 @@ return false;
 /* Checks to see if pid of block exists in the list. */
 bool list_is_in_by_pid(list_t *l, int pid){ 
   
-  /* Iterate through the list to find a node with a blk that has blk->pid = pid
-   * 
-   * USE the comparePID()
-   * 
-   * Look at list_is_in_by_size()
+  // /* Iterate through the list to find a node with a blk that has blk->pid = pid
+  //  * 
+  //  * USE the comparePID()
+  //  * 
+  //  * Look at list_is_in_by_size()
+  //  * /
+  return false;
 }
 
 /* Returns the index at which the given block of Size or greater appears. */

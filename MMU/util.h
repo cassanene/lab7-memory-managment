@@ -8,4 +8,5 @@
 
 void parse_file(FILE *, int [][2], int *, int *);
 
-#endif				// UTIL_H
+#endif
+				// UTIL_H
