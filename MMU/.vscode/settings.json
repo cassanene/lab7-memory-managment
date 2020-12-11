@@ -1,6 +1,5 @@
 {
     "files.associations": {
-        "iterator": "c",
-        "__config": "c"
+        "iterator": "c"
     }
 }
